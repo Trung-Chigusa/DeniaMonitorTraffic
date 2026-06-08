@@ -1,0 +1,747 @@
+<Window x:Class="DdosTriggerAnalyzer.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:helpers="clr-namespace:DdosTriggerAnalyzer.Helpers"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Title="Denia"
+        Icon="/Assets/denia.ico"
+        Width="1280"
+        Height="820"
+        MinWidth="980"
+        MinHeight="680"
+        Background="#070B11"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display"
+        WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d">
+    <Window.Resources>
+        <helpers:SeverityBrushConverter x:Key="SeverityBrushConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <Style x:Key="CyberCard" TargetType="Border">
+            <Setter Property="Background" Value="#101722" />
+            <Setter Property="BorderBrush" Value="#223247" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="10" Direction="270" Opacity="0.16" ShadowDepth="1" Color="#000000" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CyberButton" TargetType="Button">
+            <Setter Property="Background" Value="#00BDEB" />
+            <Setter Property="Foreground" Value="#041017" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.45" />
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#32D7FF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#0D131D" />
+            <Setter Property="Foreground" Value="#D8E5F4" />
+            <Setter Property="BorderBrush" Value="#223247" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="RowBackground" Value="#0F1722" />
+            <Setter Property="AlternatingRowBackground" Value="#111D2A" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="#1E2B3D" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="RowHeight" Value="28" />
+            <Setter Property="ColumnHeaderHeight" Value="32" />
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#121C2A" />
+            <Setter Property="Foreground" Value="#8FDFFF" />
+            <Setter Property="BorderBrush" Value="#223247" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
+
+        <Style x:Key="SeverityText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{Binding Severity, Converter={StaticResource SeverityBrushConverter}}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="CyberComboBoxItem" TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#101722" />
+            <Setter Property="Foreground" Value="#EAF6FF" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="#17324A" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#0E6F8C" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CyberComboBox" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="#EAF6FF" />
+            <Setter Property="Background" Value="#101722" />
+            <Setter Property="BorderBrush" Value="#223247" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton Background="{TemplateBinding Background}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                                            <Grid>
+                                                <ContentPresenter Margin="10,0,28,0" HorizontalAlignment="Left" VerticalAlignment="Center" TextElement.Foreground="#EAF6FF" />
+                                                <Path Data="M 0 0 L 4 4 L 8 0 Z" Fill="#8FDFFF" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                                <ContentPresenter Content="{TemplateBinding SelectionBoxItem}" TextElement.Foreground="#EAF6FF" />
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="#101722" BorderBrush="#00BDEB" BorderThickness="1" MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <ScrollViewer>
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CyberTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#0B121C" />
+            <Setter Property="Foreground" Value="#EAF6FF" />
+            <Setter Property="BorderBrush" Value="#223247" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="7,4" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="#00D7FF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="212" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#090F18" BorderBrush="#1E2B3D" BorderThickness="0,0,1,0" Padding="16">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top">
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,22">
+                        <Border Width="38" Height="38" Background="#06111B" BorderBrush="#00D7FF" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                            <Image Source="/Assets/nenapp.jpg" Stretch="UniformToFill" Margin="2" />
+                        </Border>
+                        <StackPanel Margin="10,0,0,0">
+                            <TextBlock Text="DENIA" Foreground="#00D7FF" FontSize="16" FontWeight="Bold" />
+                            <TextBlock Text="Realtime Analyzer" Foreground="#7D91AA" FontSize="12" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Style="{StaticResource CyberButton}" Command="{Binding OpenPcapCommand}" Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" Margin="0,0,8,0" />
+                            <TextBlock Text="Open PCAP" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource CyberButton}" Command="{Binding ExportReportCommand}" Background="#182536" Foreground="#D8E5F4">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileExport" Width="18" Height="18" Margin="0,0,8,0" />
+                            <TextBlock Text="Export Report" />
+                        </StackPanel>
+                    </Button>
+
+                    <Separator Background="#1E2B3D" Margin="0,18" />
+
+                    <TextBlock Text="REALTIME TSHARK" Foreground="#62748C" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <Button Style="{StaticResource CyberButton}" Command="{Binding RefreshInterfacesCommand}" Background="#132033" Foreground="#D8E5F4" Margin="0,10,0,8">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" Margin="0,0,7,0" />
+                            <TextBlock Text="Refresh NICs" />
+                        </StackPanel>
+                    </Button>
+                    <ComboBox ItemsSource="{Binding NetworkInterfaces}"
+                              SelectedItem="{Binding SelectedInterface}"
+                              Style="{StaticResource CyberComboBox}"
+                              FontSize="12"
+                              MinHeight="32"
+                              MaxDropDownHeight="280"
+                              ItemContainerStyle="{StaticResource CyberComboBoxItem}"
+                              Margin="0,0,0,8">
+                        <ComboBox.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#101722" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#101722" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#17324A" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#EAF6FF" />
+                        </ComboBox.Resources>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}"
+                                           Foreground="#EAF6FF"
+                                           TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Style="{StaticResource CyberButton}" Command="{Binding StartLiveCaptureCommand}" Padding="8,7">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Play" Width="15" Height="15" Margin="0,0,5,0" />
+                                <TextBlock Text="Live" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="2" Style="{StaticResource CyberButton}" Command="{Binding StopLiveCaptureCommand}" Background="#4A1520" Foreground="#FFD7DD" Padding="8,7">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Stop" Width="15" Height="15" Margin="0,0,5,0" />
+                                <TextBlock Text="Stop" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Border Background="#0B121C" BorderBrush="#223247" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,18">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="8" Height="8" Fill="{Binding Summary.Severity, Converter={StaticResource SeverityBrushConverter}}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding LiveModeBadge}" Foreground="#8FDFFF" FontWeight="SemiBold" FontSize="11" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding LiveCaptureStatus}" Foreground="#D8E5F4" FontSize="11" TextWrapping="Wrap" Margin="0,7,0,0" LineHeight="15" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="DEFENSIVE OFFLINE ANALYSIS" Foreground="#62748C" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#D8E5F4" Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="17" FontSize="12" />
+                    <TextBlock Text="{Binding CurrentFile}" Foreground="#7D91AA" Margin="0,14,0,0" TextWrapping="Wrap" FontSize="11" />
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Bottom">
+                    <TextBlock Text="Risk Engine" Foreground="#7D91AA" FontSize="12" />
+                    <TextBlock Text="{Binding Thresholds.WindowSeconds, StringFormat={}{0}s sliding window}" Foreground="#D8E5F4" FontSize="14" FontWeight="SemiBold" Margin="0,4,0,0" />
+                    <TextBlock Text="Offline + realtime" Foreground="#7D91AA" FontSize="11" Margin="0,3,0,0" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <ScrollViewer Grid.Column="1"
+                      Margin="18"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+        <Grid MinWidth="900">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="330" />
+                <RowDefinition Height="560" />
+                <RowDefinition Height="230" />
+                <RowDefinition Height="150" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Denia" Foreground="#EAF6FF" FontSize="26" FontWeight="Bold" />
+                    <TextBlock Text="Offline PCAP/PCAPNG, realtime TShark, host monitoring, and adjustable flood triggers" Foreground="#7D91AA" FontSize="13" Margin="0,3,0,0" />
+                </StackPanel>
+
+                <Border Grid.Column="1" Style="{StaticResource CyberCard}" Padding="12,8" VerticalAlignment="Center" MaxWidth="420">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Pulse" Foreground="{Binding Summary.Severity, Converter={StaticResource SeverityBrushConverter}}" Width="18" Height="18" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding LiveModeBadge}" Foreground="#8FDFFF" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="12" Margin="0,0,10,0" />
+                        <TextBlock Text="{Binding StatusMessage}" Foreground="#D8E5F4" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <ProgressBar Grid.Row="0"
+                         Height="3"
+                         Margin="0,60,0,0"
+                         VerticalAlignment="Bottom"
+                         Background="#132033"
+                         BorderThickness="0"
+                         Foreground="#00D7FF"
+                         Value="{Binding Progress, Mode=OneWay}"
+                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+            <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,14">
+                <Border Style="{StaticResource CyberCard}" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Total Packets" Foreground="#7D91AA" FontSize="12" />
+                        <TextBlock Text="{Binding Summary.TotalPackets}" Foreground="#EAF6FF" FontSize="24" FontWeight="Bold" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CyberCard}" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Suspicious IPs" Foreground="#7D91AA" FontSize="12" />
+                        <TextBlock Text="{Binding Summary.TotalAlerts}" Foreground="#EAF6FF" FontSize="24" FontWeight="Bold" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CyberCard}" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Victim IP" Foreground="#7D91AA" FontSize="12" />
+                        <TextBlock Text="{Binding Summary.VictimIp}" Foreground="#EAF6FF" FontSize="17" FontWeight="SemiBold" Margin="0,8,0,0" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CyberCard}" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Attack Type" Foreground="#7D91AA" FontSize="12" />
+                        <TextBlock Text="{Binding AttackTypeDisplay}" Foreground="#EAF6FF" FontSize="17" FontWeight="SemiBold" Margin="0,8,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CyberCard}">
+                    <StackPanel>
+                        <TextBlock Text="Risk Score" Foreground="#7D91AA" FontSize="12" />
+                        <TextBlock Text="{Binding RiskScoreDisplay}" Foreground="{Binding Summary.Severity, Converter={StaticResource SeverityBrushConverter}}" FontSize="24" FontWeight="Bold" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Grid Grid.Row="2" Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2.2*" />
+                    <ColumnDefinition Width="1.2*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CyberCard}" Margin="0,0,10,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Host telemetry" Foreground="#EAF6FF" FontSize="13" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding HostResources.CpuPercent, StringFormat=CPU {0:0.0}%}" Foreground="#8FDFFF" FontSize="17" FontWeight="Bold" Margin="0,10,0,0" />
+                            <TextBlock Text="{Binding HostResources.RamPercent, StringFormat=RAM {0:0.0}%}" Foreground="#FF8B2D" FontSize="17" FontWeight="Bold" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding HostResources.RamDisplay}" Foreground="#7D91AA" FontSize="10" />
+                            <TextBlock Text="{Binding HostResources.DiskPercent, StringFormat=DISK {0:0.0}%}" Foreground="#31DCA7" FontSize="17" FontWeight="Bold" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding HostResources.DiskName}" Foreground="#7D91AA" FontSize="10" />
+                        </StackPanel>
+                        <lvc:CartesianChart Grid.Column="1"
+                                            Background="#0B121C"
+                                            Series="{Binding ResourceSeries}"
+                                            XAxes="{Binding ResourceXAxes}"
+                                            YAxes="{Binding ResourceYAxes}"
+                                            LegendPosition="Hidden" />
+                    </Grid>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource CyberCard}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Manual trigger thresholds" Foreground="#EAF6FF" FontSize="13" FontWeight="SemiBold" />
+                            <WrapPanel Margin="0,8,0,0" ItemHeight="44">
+                                <StackPanel Width="68" Margin="0,0,8,0">
+                                    <TextBlock Text="Window" Foreground="#7D91AA" FontSize="10" />
+                                    <TextBox Style="{StaticResource CyberTextBox}" Text="{Binding Thresholds.WindowSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Width="72" Margin="0,0,8,0">
+                                    <TextBlock Text="SYN" Foreground="#7D91AA" FontSize="10" />
+                                    <TextBox Style="{StaticResource CyberTextBox}" Text="{Binding Thresholds.TcpSynCountThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Width="72" Margin="0,0,8,0">
+                                    <TextBlock Text="UDP" Foreground="#7D91AA" FontSize="10" />
+                                    <TextBox Style="{StaticResource CyberTextBox}" Text="{Binding Thresholds.UdpCountThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Width="72" Margin="0,0,8,0">
+                                    <TextBlock Text="ICMP" Foreground="#7D91AA" FontSize="10" />
+                                    <TextBox Style="{StaticResource CyberTextBox}" Text="{Binding Thresholds.IcmpEchoRequestThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Width="76">
+                                    <TextBlock Text="Risk min" Foreground="#7D91AA" FontSize="10" />
+                                    <TextBox Style="{StaticResource CyberTextBox}" Text="{Binding Thresholds.SuspiciousRiskThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Width="76" Margin="8,0,0,0">
+                                    <TextBlock Text="Scan ports" Foreground="#7D91AA" FontSize="10" />
+                                    <TextBox Style="{StaticResource CyberTextBox}" Text="{Binding Thresholds.PortScanUniqueDestinationPortsThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Width="76" Margin="8,0,0,0">
+                                    <TextBlock Text="Burst" Foreground="#7D91AA" FontSize="10" />
+                                    <TextBox Style="{StaticResource CyberTextBox}" Text="{Binding Thresholds.RequestBurstThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="10,22,0,0">
+                            <Button Style="{StaticResource CyberButton}" Command="{Binding ReanalyzeCommand}" Padding="10,6" MinWidth="82">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="Tune" Width="15" Height="15" Margin="0,0,5,0" />
+                                    <TextBlock Text="Apply" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource CyberButton}" Command="{Binding ResetThresholdsCommand}" Background="#182536" Foreground="#D8E5F4" Padding="10,6" MinWidth="82" Margin="0,7,0,0">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="Restore" Width="15" Height="15" Margin="0,0,5,0" />
+                                    <TextBlock Text="Reset" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="3" Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CyberCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <materialDesign:PackIcon Kind="Earth" Foreground="#00D7FF" Width="18" Height="18" Margin="0,0,8,0" />
+                            <TextBlock Text="Earth traffic map" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" />
+                            <TextBlock Text="  live geo flow view" Foreground="#7D91AA" FontSize="11" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="720" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="#06111B" BorderBrush="#17324A" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                                <Canvas Width="680" Height="260" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Rectangle Width="680" Height="260" Fill="#07111B" />
+                                    <Rectangle Width="680" Height="260" Fill="#00D7FF" Opacity="0.025" />
+                                    <Line X1="0" Y1="43" X2="680" Y2="43" Stroke="#18384F" StrokeThickness="1" Opacity="0.7" />
+                                    <Line X1="0" Y1="86" X2="680" Y2="86" Stroke="#18384F" StrokeThickness="1" Opacity="0.55" />
+                                    <Line X1="0" Y1="130" X2="680" Y2="130" Stroke="#18384F" StrokeThickness="1" Opacity="0.8" />
+                                    <Line X1="0" Y1="174" X2="680" Y2="174" Stroke="#18384F" StrokeThickness="1" Opacity="0.55" />
+                                    <Line X1="0" Y1="217" X2="680" Y2="217" Stroke="#18384F" StrokeThickness="1" Opacity="0.7" />
+                                    <Line X1="85" Y1="0" X2="85" Y2="260" Stroke="#102D43" StrokeThickness="1" />
+                                    <Line X1="170" Y1="0" X2="170" Y2="260" Stroke="#102D43" StrokeThickness="1" />
+                                    <Line X1="255" Y1="0" X2="255" Y2="260" Stroke="#102D43" StrokeThickness="1" />
+                                    <Line X1="340" Y1="0" X2="340" Y2="260" Stroke="#102D43" StrokeThickness="1" />
+                                    <Line X1="425" Y1="0" X2="425" Y2="260" Stroke="#102D43" StrokeThickness="1" />
+                                    <Line X1="510" Y1="0" X2="510" Y2="260" Stroke="#102D43" StrokeThickness="1" />
+                                    <Line X1="595" Y1="0" X2="595" Y2="260" Stroke="#102D43" StrokeThickness="1" />
+                                    <Path Data="M72,72 C105,38 164,36 196,64 C224,86 208,111 166,106 C128,103 115,130 82,116 C55,104 52,88 72,72 Z"
+                                          Fill="#12364F" Stroke="#1E6C8C" StrokeThickness="1" Opacity="0.72" />
+                                    <Path Data="M205,150 C232,137 265,146 284,174 C303,202 278,229 244,222 C214,216 197,184 205,150 Z"
+                                          Fill="#12364F" Stroke="#1E6C8C" StrokeThickness="1" Opacity="0.72" />
+                                    <Path Data="M315,69 C347,46 405,46 434,70 C458,89 450,119 413,117 C374,115 358,139 326,124 C300,112 294,86 315,69 Z"
+                                          Fill="#12364F" Stroke="#1E6C8C" StrokeThickness="1" Opacity="0.72" />
+                                    <Path Data="M429,139 C454,121 499,123 526,149 C554,176 543,210 503,216 C466,221 430,184 429,139 Z"
+                                          Fill="#12364F" Stroke="#1E6C8C" StrokeThickness="1" Opacity="0.72" />
+                                    <Path Data="M526,83 C561,57 622,66 641,101 C659,132 626,150 588,136 C552,122 519,115 526,83 Z"
+                                          Fill="#12364F" Stroke="#1E6C8C" StrokeThickness="1" Opacity="0.72" />
+                                    <Path Data="M545,193 C574,181 614,192 631,219 C607,238 565,235 545,193 Z"
+                                          Fill="#12364F" Stroke="#1E6C8C" StrokeThickness="1" Opacity="0.72" />
+                                    <ItemsControl ItemsSource="{Binding GeoTrafficFlows}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Canvas />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Canvas>
+                                                    <Path Data="{Binding ArcPath}"
+                                                          Stroke="{Binding Severity, Converter={StaticResource SeverityBrushConverter}}"
+                                                          StrokeThickness="{Binding StrokeThickness}"
+                                                          Opacity="0.88"
+                                                          StrokeStartLineCap="Round"
+                                                          StrokeEndLineCap="Round" />
+                                                    <Ellipse Width="8" Height="8"
+                                                             Canvas.Left="{Binding SourceX}"
+                                                             Canvas.Top="{Binding SourceY}"
+                                                             Fill="#00D7FF"
+                                                             Stroke="#FFFFFF"
+                                                             StrokeThickness="1" />
+                                                    <Ellipse Width="10" Height="10"
+                                                             Canvas.Left="{Binding DestinationX}"
+                                                             Canvas.Top="{Binding DestinationY}"
+                                                             Fill="#FF4357"
+                                                             Stroke="#FFFFFF"
+                                                             StrokeThickness="1" />
+                                                </Canvas>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Canvas>
+                            </Border>
+                            <ListBox Grid.Column="1" ItemsSource="{Binding GeoTrafficFlows}" Background="Transparent" BorderThickness="0" Margin="12,0,0,0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#0B121C" BorderBrush="#223247" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding FlowLabel}" Foreground="#EAF6FF" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding PacketDisplay}" Foreground="#8FDFFF" FontSize="11" />
+                                                <TextBlock Foreground="#7D91AA" FontSize="10" TextTrimming="CharacterEllipsis">
+                                                    <Run Text="{Binding SourceIp}" />
+                                                    <Run Text=" -> " />
+                                                    <Run Text="{Binding DestinationIp}" />
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource CyberCard}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <materialDesign:PackIcon Kind="Radar" Foreground="#FF4357" Width="18" Height="18" Margin="0,0,8,0" />
+                            <TextBlock Text="SOC watchlist" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <ListBox Grid.Row="1" ItemsSource="{Binding SocAlerts}" Background="Transparent" BorderThickness="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{Binding Severity, Converter={StaticResource SeverityBrushConverter}}" BorderThickness="4,0,0,0" Background="#0B121C" Padding="10,8" Margin="0,0,0,8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" Foreground="{Binding Severity, Converter={StaticResource SeverityBrushConverter}}" FontWeight="Bold" />
+                                            <TextBlock Text="{Binding SourceIp}" Foreground="#EAF6FF" FontSize="12" />
+                                            <TextBlock Text="{Binding Location}" Foreground="#8FDFFF" FontSize="11" />
+                                            <TextBlock Text="{Binding Detail}" Foreground="#7D91AA" FontSize="11" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding RiskScore, StringFormat=Risk {0}/100}" Foreground="#D8E5F4" FontSize="11" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="5" Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CyberCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Timeline: packets per second" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" />
+                        <lvc:CartesianChart Grid.Row="1" Background="#0B121C" Series="{Binding TimelineSeries}" XAxes="{Binding TimelineXAxes}" YAxes="{Binding TimelineYAxes}" LegendPosition="Hidden" />
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource CyberCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Protocol mix" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" />
+                        <Grid Grid.Row="1" Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="78" />
+                            </Grid.ColumnDefinitions>
+                            <lvc:PieChart Background="#0B121C" Series="{Binding ProtocolSeries}" LegendPosition="Hidden" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Ellipse Width="9" Height="9" Fill="#00D7FF" Margin="0,0,6,0" />
+                                    <TextBlock Text="TCP" Foreground="#D8E5F4" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Ellipse Width="9" Height="9" Fill="#FF8B2D" Margin="0,0,6,0" />
+                                    <TextBlock Text="UDP" Foreground="#D8E5F4" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Ellipse Width="9" Height="9" Fill="#FF4357" Margin="0,0,6,0" />
+                                    <TextBlock Text="ICMP" Foreground="#D8E5F4" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="9" Height="9" Fill="#8092AA" Margin="0,0,6,0" />
+                                    <TextBlock Text="Other" Foreground="#D8E5F4" FontSize="12" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource CyberCard}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Alert panel" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" />
+                        <ListBox Grid.Row="1" ItemsSource="{Binding SuspiciousIps}" Background="Transparent" BorderThickness="0" Margin="0,8,0,0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{Binding Severity, Converter={StaticResource SeverityBrushConverter}}" BorderThickness="3,0,0,0" Padding="10,7" Margin="0,0,0,7" Background="#0B121C">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Reason}" Foreground="{Binding Severity, Converter={StaticResource SeverityBrushConverter}}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding SourceIp}" Foreground="#D8E5F4" FontSize="12" />
+                                            <TextBlock Text="{Binding RiskScore, StringFormat=Risk {0}/100}" Foreground="#7D91AA" FontSize="12" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="4" Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3.2*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CyberCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Packet dump" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8" />
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding PacketDump}" EnableRowVirtualization="True" FontSize="12" RowHeight="30">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Time" Binding="{Binding TimeDisplay}" Width="155" />
+                                <DataGridTextColumn Header="Source IP" Binding="{Binding SourceIp}" Width="150" />
+                                <DataGridTextColumn Header="Destination IP" Binding="{Binding DestinationIp}" Width="160" />
+                                <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="68" />
+                                <DataGridTextColumn Header="Src Port" Binding="{Binding SourcePort}" Width="75" />
+                                <DataGridTextColumn Header="Dst Port" Binding="{Binding DestinationPort}" Width="75" />
+                                <DataGridTextColumn Header="TCP Flags" Binding="{Binding TcpFlags}" Width="82" />
+                                <DataGridTextColumn Header="Length" Binding="{Binding Length}" Width="62" />
+                                <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="78" ElementStyle="{StaticResource SeverityText}" />
+                                <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Style="{StaticResource CyberCard}" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Top Source IP" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8" />
+                            <DataGrid Grid.Row="1" ItemsSource="{Binding TopSourceIps}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="IP" Binding="{Binding IpAddress}" Width="*" />
+                                    <DataGridTextColumn Header="Geo" Binding="{Binding Location}" Width="120" />
+                                    <DataGridTextColumn Header="Packets" Binding="{Binding PacketCount}" Width="90" />
+                                    <DataGridTextColumn Header="Share %" Binding="{Binding Share}" Width="80" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="1" Style="{StaticResource CyberCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Top Destination IP" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8" />
+                            <DataGrid Grid.Row="1" ItemsSource="{Binding TopDestinationIps}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="IP" Binding="{Binding IpAddress}" Width="*" />
+                                    <DataGridTextColumn Header="Geo" Binding="{Binding Location}" Width="120" />
+                                    <DataGridTextColumn Header="Packets" Binding="{Binding PacketCount}" Width="90" />
+                                    <DataGridTextColumn Header="Share %" Binding="{Binding Share}" Width="80" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <Border Grid.Row="6" Style="{StaticResource CyberCard}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="Console" Foreground="#00D7FF" Width="17" Height="17" Margin="0,0,7,0" />
+                        <TextBlock Text="Runtime log" Foreground="#EAF6FF" FontSize="14" FontWeight="SemiBold" />
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding AppLogs}" RowHeight="24" ColumnHeaderHeight="28">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Time" Binding="{Binding TimeDisplay}" Width="74" />
+                            <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="70" />
+                            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+        </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>

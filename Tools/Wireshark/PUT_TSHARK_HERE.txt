@@ -1,0 +1,9 @@
+Optional portable TShark location
+=================================
+
+Place tshark.exe and its required Wireshark runtime files in this folder if you
+want Denia.exe to find TShark beside the app.
+
+Important:
+Realtime capture still requires Npcap installed on the Windows machine. Npcap is
+a capture driver/service and cannot be fully portable by copying files here.
